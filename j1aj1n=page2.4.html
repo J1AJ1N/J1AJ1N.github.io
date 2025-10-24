@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Singapore Real-Time Air Quality Data (PSI & Pollutants)</title>
+<style>
+:root{
+  --text:#111;
+  --card-bg: rgba(255,255,255,0.2);
+  --glass: rgba(255,255,255,0.12);
+  --shadow: 0 6px 30px rgba(0,0,0,0.35);
+  --hover-glow: rgba(255,255,255,0.6);
+}
+
+/* 基本样式 */
+html,body{
+  margin:0;
+  height:100%;
+  font-family:"Segoe UI",Roboto,"Microsoft YaHei",Arial,sans-serif;
+  background:#0b0c0e;
+  color:var(--text);
+  overflow:hidden;
+}
+
+.stage{
+  position:relative;
+  height:100vh;
+  width:100vw;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:36px;
+  box-sizing:border-box;
+}
+
+/* 背景图片 */
+.bg-wrap{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
+  z-index:0;
+  overflow:hidden;
+}
+
+.bg-wrap img{
+  width:130vw;            
+  height:auto;
+  object-fit:cover;
+  opacity:0.28;
+  filter: brightness(0.9) contrast(1.6) grayscale(0.1);
+  transition: transform 0.18s cubic-bezier(.2,.8,.2,1);
+}
+
+/* 卡片容器 */
+.card{
+  position:relative;
+  z-index:5;
+  width:min(1100px,94%);
+  max-height:86vh;
+  overflow:auto;
+  background:var(--card-bg);
+  border-radius:14px;
+  padding:20px 22px;
+  box-shadow:var(--shadow);
+  backdrop-filter: blur(12px);
+  border:1px solid rgba(255,255,255,0.15);
+}
+
+/* 科技感时间-白色发光 */
+.clock{
+  position:absolute;
+  top:20px;
+  right:20px;
+  font-size:16px;
+  font-weight:700;
+  color:#fff;
+  background:rgba(0,0,0,0.3);
+  padding:6px 12px;
+  border-radius:6px;
+  border:1px solid rgba(255,255,255,0.2);
+  font-family:"Segoe UI",Roboto,"Microsoft YaHei",Arial,sans-serif;
+  user-select:none;
+  z-index:10;
+  text-shadow:
+    0 0 4px #fff,
+    0 0 8px #fff,
+    0 0 12px #fff;
+}
+
+/* 卡片头部 */
+.header{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  margin-bottom:12px;
+}
+
+.logo-dot{
+  width:44px;
+  height:44px;
+  border-radius:10px;
+  background:#666;
+  box-shadow:0 6px 18px rgba(0,0,0,0.25);
+}
+
+h1{
+  margin:0;
+  font-size:18px;
+  letter-spacing:0.6px;
+  color:var(--text);
+}
+
+p.sub{
+  margin:0;
+  color:rgba(17,17,17,0.85);
+  font-size:13px;
+}
+
+.table-wrap{
+  margin-top:14px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+  background:rgba(255,255,255,0.22);
+  border-radius:10px;
+  overflow:hidden;
+}
+
+thead th{
+  position:sticky;
+  top:0;
+  background:rgba(255,255,255,0.3);
+  padding:12px 10px;
+  text-align:left;
+  font-size:12px;
+  color:#111;
+  letter-spacing:0.6px;
+}
+
+tbody td{
+  padding:10px 10px;
+  border-top:1px solid rgba(255,255,255,0.25);
+  font-size:14px;
+  color:#111;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  cursor: default;
+  position:relative;
+}
+
+tbody td.value span{
+  display:inline-block;
+  width:100%;
+  height:100%;
+  text-align:center;
+  transition: transform 0.2s ease, text-shadow 0.2s ease, color 0.2s ease;
+}
+
+tbody td.value span:hover{
+  transform: scale(1.3);
+  color:#fff;
+  text-shadow:
+    0 0 4px #fff,
+    0 0 8px #fff,
+    0 0 12px #fff,
+    0 0 18px #fff;
+}
+
+tbody tr:hover td{
+  background:rgba(255,255,255,0.1);
+}
+
+.metric-label{
+  font-size:12px;
+  color:#111;
+}
+
+.info-row{
+  display:flex;
+  gap:18px;
+  align-items:center;
+  margin-top:12px;
+  flex-wrap:wrap;
+}
+
+.chip{
+  background:rgba(255,255,255,0.28);
+  padding:8px 12px;
+  border-radius:999px;
+  font-size:13px;
+  color:#111;
+  border:1px solid rgba(255,255,255,0.18);
+}
+
+@media (max-width:760px){
+  thead th, tbody td{font-size:12px;padding:8px}
+  .header h1{font-size:16px}
+  .clock{font-size:13px;padding:4px 8px;}
+}
+</style>
+</head>
+<body>
+<div class="bg-wrap" id="bgWrap">
+  <img src="https://media.istockphoto.com/id/1147237564/vector/singapore-map.jpg?s=612x612&w=0&k=20&c=SoeNl4M9XkDvXaKxnOza0F4f_sr-fwYffpikqCc4AHI=" id="bgImage" alt="Singapore Map">
+</div>
+
+<div class="stage">
+  <div class="card">
+    <div class="clock" id="clock">--:--:--</div>
+    <div class="header">
+      <div class="logo-dot"></div>
+      <div>
+        <h1>Singapore Real-Time Air Quality Data</h1>
+        <p class="sub">Live API data displaying all pollutants (PSI, O₃, PM₂.₅, PM₁₀, CO, SO₂, NO₂, etc.) by region</p>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="psiTable">
+        <thead id="tableHead"></thead>
+        <tbody id="tableBody">
+          <tr><td colspan="12">Loading data…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="info-row" id="infoRow">
+      <div class="chip" id="timeChip">Updated: —</div>
+      <div class="chip" id="statusChip">Status: Loading</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_URL='https://api.data.gov.sg/v1/environment/psi';
+const tableHead=document.getElementById('tableHead');
+const tableBody=document.getElementById('tableBody');
+const timeChip=document.getElementById('timeChip');
+const statusChip=document.getElementById('statusChip');
+const bgImage=document.getElementById('bgImage');
+const clockEl=document.getElementById('clock');
+
+function prettyName(key){return key.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());}
+
+async function fetchAndRender(){
+  statusChip.textContent='Status: Fetching API…';
+  try{
+    const res=await fetch(API_URL,{cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    const latest=data.items[0];
+    const readings=latest.readings||{};
+    const regionMeta=data.region_metadata||[];
+
+    const perRegionMetrics=[];
+    const globalMetrics=[];
+    for(const k of Object.keys(readings)){
+      const v=readings[k];
+      if(v && typeof v==='object' && !Array.isArray(v)) perRegionMetrics.push(k);
+      else globalMetrics.push(k);
+    }
+
+    let regions=[];
+    if(regionMeta.length) regions=regionMeta.map(r=>r.name);
+    else{
+      const set=new Set();
+      perRegionMetrics.forEach(m=>Object.keys(readings[m]||{}).forEach(r=>set.add(r)));
+      regions=Array.from(set);
+    }
+    if(regions.length===0) regions=['national'];
+
+    const headTr=document.createElement('tr');
+    headTr.innerHTML=`<th>Region</th>`+perRegionMetrics.map(m=>`<th class="metric-label">${prettyName(m)}</th>`).join('');
+    tableHead.innerHTML='';
+    tableHead.appendChild(headTr);
+
+    tableBody.innerHTML='';
+    regions.forEach(region=>{
+      const tr=document.createElement('tr');
+      let rowHtml=`<td style="font-weight:600">${region}</td>`;
+      perRegionMetrics.forEach(m=>{
+        const val=(readings[m] && (region in readings[m]))? readings[m][region] : (readings[m] && readings[m][region]===0?0:'—');
+        rowHtml+=`<td class="value"><span>${val}</span></td>`;
+      });
+      tr.innerHTML=rowHtml;
+      tableBody.appendChild(tr);
+    });
+
+    const infoRow=document.getElementById('infoRow');
+    Array.from(infoRow.querySelectorAll('.chip')).slice(2).forEach(n=>n.remove());
+    globalMetrics.forEach(k=>{
+      const v=readings[k];
+      const chip=document.createElement('div');
+      chip.className='chip';
+      chip.textContent=`${prettyName(k)}: ${v}`;
+      infoRow.appendChild(chip);
+    });
+
+    timeChip.textContent='Updated: '+(latest.timestamp||'-');
+    statusChip.textContent='Status: Data loaded';
+  }catch(err){
+    console.error(err);
+    tableHead.innerHTML='';
+    tableBody.innerHTML=`<tr><td colspan="12">Failed to load data: ${err.message}</td></tr>`;
+    timeChip.textContent='Updated: —';
+    statusChip.textContent='Status: Load failed';
+  }
+}
+
+fetchAndRender();
+setInterval(fetchAndRender,5*60*1000);
+
+// 背景视差效果
+(function(){
+  const img=bgImage;
+  const maxTranslate=18;
+  window.addEventListener('mousemove',e=>{
+    const nx=(e.clientX/window.innerWidth-0.5)*2;
+    const ny=(e.clientY/window.innerHeight-0.5)*2;
+    const tx=-nx*maxTranslate;
+    const ty=-ny*maxTranslate*0.6;
+    img.style.transform=`translate3d(${tx}px,${ty}px,0) scale(1.02)`;
+  });
+  window.addEventListener('mouseleave',()=>img.style.transform='translate3d(0,0,0) scale(1.02)');
+})();
+
+// 实时更新时间
+function updateClock(){
+  const now=new Date();
+  const y=now.getFullYear();
+  const mo=String(now.getMonth()+1).padStart(2,'0');
+  const d=String(now.getDate()).padStart(2,'0');
+  const h=String(now.getHours()).padStart(2,'0');
+  const mi=String(now.getMinutes()).padStart(2,'0');
+  const s=String(now.getSeconds()).padStart(2,'0');
+  clockEl.textContent=`${y}-${mo}-${d} ${h}:${mi}:${s}`;
+}
+updateClock();
+setInterval(updateClock,1000);
+</script>
+</body>
+</html>
