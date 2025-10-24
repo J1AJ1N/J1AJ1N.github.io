@@ -11,13 +11,8 @@
             box-sizing: border-box;
         }
         
-        @font-face {
-            font-family: 'Impact';
-            src: local('Impact'), local('Impact Regular');
-        }
-        
         body {
-            font-family: 'Impact', 'Arial Black', 'Montserrat', sans-serif;
+            font-family: 'Helvetica', 'Arial', sans-serif;
             background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
             color: #d4af37;
             min-height: 100vh;
@@ -83,7 +78,7 @@
             opacity: 0.8;
             max-width: 600px;
             margin: 0 auto;
-            font-family: Arial, sans-serif;
+            line-height: 1.6;
             letter-spacing: 0.5px;
         }
         
@@ -144,15 +139,14 @@
             font-size: 2rem;
             margin-bottom: 10px;
             color: #f9e076;
-            letter-spacing: 1.5px; /* 增加字距 */
-            line-height: 1.3;
+            letter-spacing: 1.5px;
+            line-height: 1.4;
         }
         
         .portfolio-content p {
             font-size: 0.9rem;
             opacity: 0.8;
-            line-height: 1.5;
-            font-family: Arial, sans-serif;
+            line-height: 1.6;
             letter-spacing: 0.3px;
         }
         
@@ -173,6 +167,7 @@
             font-size: 1.1rem;
             opacity: 0.8;
             letter-spacing: 0.5px;
+            line-height: 1.6;
         }
         
         .contact-links {
@@ -190,11 +185,20 @@
             border-radius: 5px;
             transition: all 0.3s;
             letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .contact-link:hover {
             background: rgba(212, 175, 55, 0.1);
             border-color: rgba(212, 175, 55, 0.8);
+        }
+        
+        .email-icon {
+            width: 20px;
+            height: 20px;
+            fill: #d4af37;
         }
         
         /* Back to Home Button */
@@ -204,13 +208,14 @@
             right: 30px;
             background: rgba(212, 175, 55, 0.9);
             color: #0a0a0a;
-            padding: 15px 25px;
-            border-radius: 25px;
+            padding: 12px 20px;
+            border-radius: 20px;
             text-decoration: none;
             font-weight: bold;
             transition: all 0.3s;
             z-index: 100;
             letter-spacing: 1px;
+            font-size: 0.9rem;
         }
         
         .back-home:hover {
@@ -300,12 +305,17 @@
         <h2>CONTACT ME</h2>
         <p>Interested in collaboration or want to know more? Feel free to reach out.</p>
         <div class="contact-links">
-            <a href="mailto:jiajinnnnn@outlook.com" class="contact-link">Email</a>
+            <a href="mailto:jiajinnnnn@outlook.com" class="contact-link">
+                <svg class="email-icon" viewBox="0 0 24 24">
+                    <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                </svg>
+                jiajinnnnn@outlook.com
+            </a>
         </div>
     </section>
 
     <!-- Back to Home Button -->
-    <a href="j1aj1n=page1.html" class="back-home">Back to Home</a>
+    <a href="j1aj1n=page1.html" class="back-home">Back</a>
 
     <script>
         // Project navigation function
